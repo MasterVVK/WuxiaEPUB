@@ -45,17 +45,18 @@ def create_epub(title, chapters, filename='output.epub'):
     epub.write_epub(filename, book)
     print(f'EPUB файл "{filename}" успешно создан!')
 
-# Список ссылок на главы
-base_url = 'https://wuxiaworld.ru/mir-bessmertnyh/mir-bessmertnyh-glava-'
-num_chapters = 3  # Укажите количество глав, которые хотите спарсить
-
-urls = [f'{base_url}{i}-razrushit-pustotu/' for i in range(1, num_chapters + 1)]
+# Начальный URL
+start_url = 'https://wuxiaworld.ru/mir-bessmertnyh/mir-bessmertnyh-glava-1-razrushit-pustotu/'
 
 # Извлечение данных и создание списка глав
 chapters = []
-for url in urls:
+current_url = start_url
+chapter_count = 0
+max_chapters = 3  # Ограничение на количество первых глав
+
+while current_url and chapter_count < max_chapters:
     try:
-        html_content = fetch_webpage_content(url)
+        html_content = fetch_webpage_content(current_url)
         soup = BeautifulSoup(html_content, 'html.parser')
 
         # Извлечение заголовка и текста главы
@@ -71,13 +72,24 @@ for url in urls:
 
             chapters.append((chapter_title, chapter_body))
             print(f'Глава "{chapter_title}" успешно добавлена.')
+            chapter_count += 1
         else:
-            print(f'Текст главы не найден для {url}')
+            print(f'Текст главы не найден для {current_url}')
+
+        # Найти URL следующей главы (кнопка с rel="Вперед")
+        next_button = soup.find('a', rel='Вперед')
+        if next_button:
+            current_url = next_button['href']
+        else:
+            print('Ссылка на следующую главу не найдена. Парсинг завершен.')
+            break
     except requests.exceptions.HTTPError as e:
-        print(f'HTTP ошибка при обработке {url}: {e}')
+        print(f'HTTP ошибка при обработке {current_url}: {e}')
+        break
     except Exception as e:
-        print(f'Произошла ошибка при обработке {url}: {e}')
+        print(f'Произошла ошибка при обработке {current_url}: {e}')
+        break
 
 # Создание EPUB файла
 if chapters:
-    create_epub('Мир Бессмертных', chapters, 'mir_bessmertnyh_full.epub')
+    create_epub('Мир Бессмертных', chapters, 'mir_bessmertnyh_first_3_chapters.epub')
