@@ -1,6 +1,7 @@
 import requests
 from bs4 import BeautifulSoup
 from ebooklib import epub
+import time  # Импортируем модуль для работы с паузами
 
 # Функция для получения содержимого веб-страницы с заголовком User-Agent
 def fetch_webpage_content(url):
@@ -52,7 +53,7 @@ start_url = 'https://wuxiaworld.ru/mir-bessmertnyh/mir-bessmertnyh-glava-1-razru
 chapters = []
 current_url = start_url
 chapter_count = 0
-max_chapters = 3  # Ограничение на количество первых глав
+max_chapters = 688  # Ограничение на количество первых глав
 
 while current_url and chapter_count < max_chapters:
     try:
@@ -66,6 +67,10 @@ while current_url and chapter_count < max_chapters:
         if chapter_body_tag:
             for unwanted in chapter_body_tag.find_all(['a', 'script', 'style', 'iframe', 'ins']):
                 unwanted.decompose()
+
+            for unwanted_text in ['Редактируется Читателями!', 'Читать»Мир Бессмертных', 'Автор: Chen Dong', 'Перевод: Artificial_Intelligence', 'Нет главы и т.п. - пиши в Комменты. Читать без рекламы !']:
+                for unwanted in chapter_body_tag.find_all(string=lambda text: unwanted_text in text):
+                    unwanted.extract()
 
             chapter_body = ''.join(str(tag) for tag in chapter_body_tag.find_all(['p', 'h2', 'h3', 'br']))
             chapter_body = chapter_body.replace('\n', '').strip()
@@ -83,13 +88,19 @@ while current_url and chapter_count < max_chapters:
         else:
             print('Ссылка на следующую главу не найдена. Парсинг завершен.')
             break
+
+        # Пауза перед следующим запросом
+        time.sleep(5)  # Пауза в 5 секунд (можно увеличить при необходимости)
+
     except requests.exceptions.HTTPError as e:
         print(f'HTTP ошибка при обработке {current_url}: {e}')
-        break
+        print('Ожидание перед повтором...')
+        time.sleep(30)  # Пауза в 30 секунд при возникновении ошибки 503
+        continue  # Повторить попытку
     except Exception as e:
         print(f'Произошла ошибка при обработке {current_url}: {e}')
         break
 
 # Создание EPUB файла
 if chapters:
-    create_epub('Мир Бессмертных', chapters, 'mir_bessmertnyh_first_3_chapters.epub')
+    create_epub('Мир Бессмертных', chapters, 'mir_bessmertnyh_full.epub')
