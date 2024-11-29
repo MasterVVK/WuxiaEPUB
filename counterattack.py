@@ -53,7 +53,7 @@ start_url = 'https://wuxiaworld.ru/imperator-syanvu/kontrataka-izgnannogo-ucheni
 chapters = []
 current_url = start_url
 chapter_count = 0
-max_chapters = 3365  # Ограничение на количество первых глав
+max_chapters = 1#3365  # Ограничение на количество первых глав
 
 while current_url and chapter_count < max_chapters:
     try:
@@ -82,6 +82,7 @@ while current_url and chapter_count < max_chapters:
 
             chapters.append((chapter_title, chapter_body))
             print(f'Глава "{chapter_title}" успешно добавлена.')
+            print(chapter_body)
             chapter_count += 1
         else:
             print(f'Текст главы не найден для {current_url}')
