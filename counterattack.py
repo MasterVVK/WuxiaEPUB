@@ -53,7 +53,7 @@ start_url = 'https://wuxiaworld.ru/imperator-syanvu/kontrataka-izgnannogo-ucheni
 chapters = []
 current_url = start_url
 chapter_count = 0
-max_chapters = 1#3365  # Ограничение на количество первых глав
+max_chapters = 2#3365  # Ограничение на количество первых глав
 
 while current_url and chapter_count < max_chapters:
     try:
